@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Culminating</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <!-- leaflet libraries -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>   
+-->
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<script src="leaflet/leaflet.js" ></script>
+  <!-- Tippy.js library -->
+  <!-- <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+  <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
+  -->
+  <script src="tippy/popper.min.js"></script>
+  <script src="tippy/tippy-bundle.umd.min.js"></script>
+</head> 
+
+<body >
+  <!-- loading screen animation -->
+  <script src = 'scripts/tutorial.js'></script>
+  <script src = 'scripts/pageload.js' ></script>
+  <!-- loading img/text -->
+  <div id="loading" class="loader">
+    <p style="z-index:6000; color: white; font-size: 100%; padding: 40vh 0;">Loading...</p>
+  </div>
+  <!-- main site -->
+  <!-- informative blurb -->
+  <h1 style = "margin: 0px; margin-left: 5px;padding: 0px; color: lightgrey;">Introduction</h1>
+  <p style =" margin: 0px; margin-left: 5px;  color: lightgrey;">
+    The purpose of this web-map is to illustrate the Israel-Palestian Conflict through the change in Palestinian and Israeli territory over time. 
+    The interactive timeline displaying this can be toggled by clicking the "Present" checkbox.
+    The slider, which may not be visible until the page is scrolled downward, can be used to change the year represented on the web-map.
+    
+  </p>
+  <hr style = "background-color: lightgrey; height: 1px; display: block; clear: both; width: 97%;">
+  <p style =" margin: 0px; margin-left: 5px;  color: lightgrey;"> Draw on map in "LINE" mode, press "RESET POINTS", then
+    <a href="#" id="download" download="mapdata">
+      click to download as txt file. </a>
+  </p>
+  <!--map -->
+  <div id="mapContainer" >
+      <div id="navbar">
+    <!-- tilemap dropdown -->
+    <div class="dropdown" id="themeDropdown">
+      <button class="dropbtn navbarItem" id = "tilemap">Change Tilemap</button>
+      <div class="dropdown-content" id = "tilemapDropdown">
+        <a href="#" onclick="changeMap('dark')">Dark Mode</a>
+        <a href="#" onclick="changeMap('light')">Light Mode</a>
+        <a href="#" onclick="changeMap('default')">Default</a>
+        <a href="#" onclick="changeMap('sunny')">Sunny</a>
+        <a href="#" onclick="changeMap('matrix')">Matrix</a>
+      </div>
+    </div>
+    <!-- drawing dropdown -->
+    <div class="dropdown" id="drawingDropdown">
+      <button class="dropbtn  navbarItem" id = "drawMode">Draw Mode</button>
+      <div class="dropdown-content" id = "drawDropdown">
+        <a href="#" onclick="changeMode('line')" id='line'>Line</a>
+        <a href="#" onclick="changeMode('pen')" id='pen'>Pen</a>
+        <a href="#" onclick="changeMode('none')" id='none'>None ✓</a>
+      </div>
+    </div>
+    <!-- buttons -->
+    <div style="margin: 0; padding: 0" class="navbarItem wrapper" id="resetWrapper">
+      <button id="reset" class = "navbarItem" onclick="clearDrawings()" disabled>Clear</button>
+    </div>
+    <div style="margin: 0; padding: 0" class="navbarItem wrapper" id="undoWrapper">
+      <button id="undo" class = "navbarItem" onclick="undo()" disabled>Undo</button>
+    </div>
+    <div style="margin: 0; padding: 0" class="navbarItem wrapper" id="redoWrapper">
+      <button id="redo" class = "navbarItem" onclick="redo()" disabled>Redo</button>
+    </div>
+    <div style="margin: 0; padding: 0" class="navbarItem wrapper" id="resetStartWrapper">
+      <button id="resetStart" class = "navbarItem" onclick="resetStart()" disabled>Reset Points</button>
+    </div>
+    <!-- checkbox for displaying-->
+    <div class="checkbox navbarItem" id="storeDrawingDiv">
+      <input type="checkbox" id="storeDrawing" name="storeDrawing" value="true" onclick=" 
+    (function(){
+if(document.getElementById('storeDrawing').checked){
+     map.addLayer(countryLayer);
+     orderLayers();
+    }
+    else{
+     map.removeLayer(countryLayer);
+    }                   
+  })();">
+      <label for "storeDrawing">Highlight Countries?</label>
+    </div>
+    <!-- checkbox for presenting -->
+    <div class="checkbox navbarItem" id="presentDiv">
+      <input type="checkbox" id="present" name="present" value="presenting">
+      <label for "present">Present?</label>
+    </div>
+  </div>
+    <!-- leaflet map container -->
+    <div id="map">
+
+    </div>
+    <!--year slider -->
+    <div class="slidercontainer" id="yearSliderContainer">
+      <div id="minimize" style="font-size: 30px; color: darkgrey;">X</div>
+      <input type="range" min="1916" max="2022" value="1916" class="slider" id="yearSlider" disabled 
+        oninput="(()=>{
+  let popups = document.getElementsByClassName('popup');
+  prevYear = currYear;
+  currYear = Number(document.getElementById('yearSlider').value);
+  //delete all popups
+  while(popups[0]) {
+    popups[0].parentNode.removeChild(popups[0]);
+ }
+    document.getElementById('year').value = document.getElementById('yearSlider').value;
+     console.log(prevYear+'|'+currYear);
+  })();" step="1">
+      <!-- text box for year-->
+      <div id = "yearInputDiv">
+        <button class = "incrementButton"  id = "minusButton">−</button>
+      <input type = "number" id="year" name = "year" value = 1916>
+        <button class = "incrementButton" id = "plusButton">+</button>
+      </div>
+    </div>
+  </div>
+  <!-- scripts -->
+
+  
+  <!-- loader --> 
+  <script src="loader.js"></script>
+  <!-- country datasets -->
+  <script src="data/mapdata.js"></script>
+  <script src="data/country-by-life-expectancy.js"></script>
+  <script src="data/country-by-population-density.js"></script>
+  <script src="data/country-by-population.js"></script>
+  <script src="data/countries.js"></script>
+  <!-- code -->
+  <script src="scripts/tilemaps.js"></script>
+  <script src="scripts/script.js"></script>
+  <script src="scripts/click.js"></script>
+  <script src="scripts/draw.js"></script>
+  <script src='scripts/getdata.js'></script>
+
+  <!-- repl badge -->
+  <!--script src="https://replit.com/public/js/replit-badge-v2.js" theme="dark" position="top-right"></script-->
+</body>
+
+</html>
